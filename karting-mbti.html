@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卡丁车MBTI测试</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #fff;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .screen.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 开始页 */
+        .start-screen { text-align: center; }
+        .title {
+            font-size: 36px;
+            font-weight: 900;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ff3e3e, #ff8c00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .follow-section {
+            background: #f8f8f8;
+            border-radius: 16px;
+            padding: 24px 20px;
+            margin-bottom: 25px;
+        }
+        .follow-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        .follow-btns {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .follow-btn {
+            padding: 12px 24px;
+            border-radius: 50px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .follow-btn.douyin {
+            background: #000;
+            color: #fff;
+        }
+        .follow-btn.xhs {
+            background: #ff2442;
+            color: #fff;
+        }
+        .follow-btn:hover { transform: scale(1.05); }
+        .follow-btn.done {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .follow-btn.done::after {
+            content: " ✓";
+        }
+        .start-btn {
+            background: linear-gradient(135deg, #ff3e3e, #ff8c00);
+            border: none;
+            color: white;
+            padding: 16px 50px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+        .start-btn:hover { transform: scale(1.05); }
+        .start-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .start-hint {
+            font-size: 13px;
+            color: #999;
+            margin-top: 12px;
+        }
+
+        /* 题目页 */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #eee;
+            border-radius: 2px;
+            margin-bottom: 30px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff3e3e, #ff8c00);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        .question-number {
+            color: #ff8c00;
+            font-size: 13px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .question-text {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            color: #222;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .option {
+            background: #f8f8f8;
+            border: 1.5px solid #eee;
+            border-radius: 14px;
+            padding: 18px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-size: 15px;
+            line-height: 1.5;
+            color: #333;
+        }
+        .option:hover {
+            background: #fff;
+            border-color: #ff8c00;
+            transform: translateX(8px);
+            box-shadow: 0 2px 8px rgba(255,140,0,0.15);
+        }
+
+        /* 结果页 */
+        .result-screen { text-align: center; }
+        .result-image {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            margin: 0 auto 20px;
+            display: block;
+        }
+        .result-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tag {
+            background: rgba(255, 36, 66, 0.08);
+            color: #ff2442;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .result-desc {
+            background: #f8f8f8;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: left;
+            line-height: 1.8;
+            color: #555;
+            font-size: 15px;
+        }
+        .restart-btn {
+            background: transparent;
+            border: 2px solid #ff8c00;
+            color: #ff8c00;
+            padding: 14px 35px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .restart-btn:hover {
+            background: #ff8c00;
+            color: #fff;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #bbb;
+            font-size: 12px;
+        }
+
+        /* 加载页 */
+        .loading { text-align: center; padding: 50px 20px; }
+        .loading-spinner {
+            width: 45px;
+            height: 45px;
+            border: 3px solid #eee;
+            border-top-color: #ff8c00;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 开始页 -->
+        <div id="start-screen" class="screen start-screen active">
+            <h1 class="title">卡丁车MBTI</h1>
+            <p class="subtitle">测测你是哪种赛道生物</p>
+
+            <div class="follow-section">
+                <div class="follow-title">关注 Mars Racing 官方账号，开始测试</div>
+                <div class="follow-btns">
+                    <a class="follow-btn douyin" id="btn-douyin" href="https://www.douyin.com/user/MS4wLjABAAAAKGJr2rZg8Sy1LjovWWtD108jkIIyto7zxBE0jukkrmI" target="_blank">关注抖音号</a>
+                    <a class="follow-btn xhs" id="btn-xhs" href="https://www.xiaohongshu.com/user/profile/618187bd0000000010009cf8" target="_blank">关注小红书</a>
+                </div>
+            </div>
+
+            <button class="start-btn" id="start-btn" onclick="startTest()" disabled>开始测试 →</button>
+            <p class="start-hint" id="start-hint">点击上方任意按钮关注后即可开始</p>
+            <div class="footer">Mars Racing</div>
+        </div>
+
+        <!-- 加载页 -->
+        <div id="loading-screen" class="screen">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p style="color:#888;">正在分析你的赛道人格...</p>
+            </div>
+        </div>
+
+        <!-- 题目页 -->
+        <div id="question-screen" class="screen">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <div class="question-number" id="question-number">第 1/12 题</div>
+            <div class="question-text" id="question-text"></div>
+            <div class="options" id="options"></div>
+        </div>
+
+        <!-- 结果页 -->
+        <div id="result-screen" class="screen result-screen">
+            <img class="result-image" id="result-image" src="" alt="">
+            <div class="result-tags" id="result-tags"></div>
+            <div class="result-desc" id="result-desc"></div>
+            <button class="restart-btn" onclick="restartTest()">再测一次</button>
+            <div class="footer">Mars Racing</div>
+        </div>
+    </div>
+
+    <script>
+        let hasFollowed = false;
+
+        document.getElementById('btn-douyin').addEventListener('click', function() {
+            this.classList.add('done');
+            this.textContent = '已关注抖音';
+            enableStart();
+        });
+
+        document.getElementById('btn-xhs').addEventListener('click', function() {
+            this.classList.add('done');
+            this.textContent = '已关注小红书';
+            enableStart();
+        });
+
+        function enableStart() {
+            if (!hasFollowed) {
+                hasFollowed = true;
+                document.getElementById('start-hint').textContent = '页面加载中...';
+                setTimeout(() => {
+                    document.getElementById('start-btn').disabled = false;
+                    document.getElementById('start-hint').textContent = '可以开始了！';
+                    document.getElementById('start-hint').style.color = '#4ade80';
+                }, 2500);
+            }
+        }
+
+        const personalities = {
+            '保胎大师': {
+                image: './images/保胎大师1.png',
+                tags: ['爱胎如命', '温柔驾驶', '稳字当头'],
+                desc: '你对轮胎的感情比对自己还好。每次下场都像是在约会，轻踩油门温柔刹车，生怕伤着它们。别人在push极限，你在给轮胎做SPA。虽然圈速不一定最快，但你的轮胎一定是全场最健康的。'
+            },
+            '割草机': {
+                image: './images/割草机1.png',
+                tags: ['横冲直撞', '越野狂人', '破坏力MAX'],
+                desc: '在你的字典里没有"赛道边界"这个词。草坪、砂石、路肩，哪里都能开，开到哪里都像是在割草。别人开卡丁车，你开的是拉力赛。虽然经常被骂，但你心里清楚——其实你是个拉力车手。'
+            },
+            '路肩': {
+                image: './images/路肩1.png',
+                tags: ['路肩收藏家', '极限走线', '轨道车'],
+                desc: '你对路肩有着特殊的执念，看到红白相间的东西就想压上去。每一圈都在挑战赛道的边界，走线精准得像轨道车。别人害怕的路肩，是你的甜点。'
+            },
+            '漂移': {
+                image: './images/漂移1.png',
+                tags: ['经常打滑', '意外艺术家', '帅就完事'],
+                desc: '别人过弯靠技术，你过弯靠运气。每次以为自己是在漂移，其实是在spin。虽然圈速可能因此慢了半秒，但谁在乎呢？帅是一辈子的事，而且你坚信——原来漂移不能攒氮气。'
+            },
+            '气氛组': {
+                image: './images/气氛组1.png',
+                tags: ['吃货', '社交天花板', '佛系车手'],
+                desc: '你来赛道的真正目的不是开车，是吃饭。练不练车不重要，重要的是练完吃什么。你是围场里的社交中心，走到哪都是欢声笑语。虽然圈速一般，但人气绝对是第一。'
+            },
+            '汽车人': {
+                image: './images/汽车人1.png',
+                tags: ['训练狂魔', '模拟器达人', '机械控'],
+                desc: '你和卡丁车的关系已经超越了人车合一，你简直就是汽车人。不练车的时候在练模拟器，不练模拟器的时候在研究机械结构。别人问你累不累，你说这才哪到哪。'
+            },
+            '摄影师': {
+                image: './images/摄影师1.png',
+                tags: ['拍照狂魔', '围场记者', ' excuses 大师'],
+                desc: '你的镜头永远比你的车快。别人在push圈速，你在找最佳拍摄角度。拍糊了？那叫速度感！虽然驾驶技术一般，但你用照片记录了整个围场的精彩瞬间。'
+            },
+            '数据狂魔': {
+                image: './images/数据狂魔1.png',
+                tags: ['数据控', '逐帧分析', '0.01秒计较'],
+                desc: '你的大脑是一台超级计算机。每次下场都在记录数据，每次回家都在复盘分析。三号弯油门开早了0.02秒？这不能忍！别人靠感觉开车，你靠Excel开车。'
+            },
+            '小孩哥/小孩姐': {
+                image: './images/小孩哥1.png',
+                tags: ['天赋型', '年少有为', '教学型'],
+                desc: '别看你年轻，技术比你年龄大两轮的人都好。你还在喝奶的年纪就开始教别人过弯了。天赋异禀是你的标签，年少有为是你的日常。别人叫你小孩，你叫别人叔叔阿姨。'
+            },
+            '鱼雷': {
+                image: './images/鱼雷1.png',
+                tags: ['弯道杀手', '内线狂魔', '不计后果'],
+                desc: '你的眼里只有超车，没有刹车。弯道就是你的武器，内线就是你的家。不管有没有空间，先挤进去再说。虽然经常冲出赛道，但你坚信——弯道不就是用来超车的吗？'
+            }
+        };
+
+        const questions = [
+            {
+                text: '周末有空，你更想干嘛？',
+                options: [
+                    { text: '去赛道练车，不练就浑身难受', type: '汽车人' },
+                    { text: '约朋友吃饭唠嗑', type: '气氛组' },
+                    { text: '在家研究别人比赛的录像', type: '数据狂魔' }
+                ]
+            },
+            {
+                text: '第一次开一辆新车，你会？',
+                options: [
+                    { text: '温柔点，先暖暖胎再推', type: '保胎大师' },
+                    { text: '直接地板油，看它能跑多快', type: '割草机' },
+                    { text: '跑一圈就知道这车什么脾气了', type: '小孩哥/小孩姐' }
+                ]
+            },
+            {
+                text: '朋友问你"怎么过弯最快"，你？',
+                options: [
+                    { text: '掏出笔记本画线路图，从入弯讲到出弯', type: '汽车人' },
+                    { text: '"感觉对了就过了，这玩意没法教"', type: '割草机' },
+                    { text: '"你试试这个角度入弯..."', type: '小孩哥/小孩姐' }
+                ]
+            },
+            {
+                text: '前面有车挡着，你？',
+                options: [
+                    { text: '等等看，不冒险', type: '保胎大师' },
+                    { text: '内线硬挤，过弯不超车等于白来', type: '鱼雷' },
+                    { text: '假装自己是头文字D主角', type: '漂移' }
+                ]
+            },
+            {
+                text: '手机相册里最多的是什么？',
+                options: [
+                    { text: '圈速数据和成绩截图', type: '数据狂魔' },
+                    { text: '赛道照片，各种角度的车', type: '摄影师' },
+                    { text: '美食照片和聚会合照', type: '气氛组' }
+                ]
+            },
+            {
+                text: '比赛结束，你第一件事是？',
+                options: [
+                    { text: '复盘数据，看看哪里慢了0.1秒', type: '数据狂魔' },
+                    { text: '再跑几圈，压压路肩', type: '路肩' },
+                    { text: '发朋友圈晒照片', type: '摄影师' }
+                ]
+            },
+            {
+                text: '给你一辆卡丁车随便开，你会？',
+                options: [
+                    { text: '研究机械结构，想拆开看看', type: '汽车人' },
+                    { text: '开到草坪上试试越野能力', type: '割草机' },
+                    { text: '压路肩，看能压多极限', type: '路肩' }
+                ]
+            },
+            {
+                text: '你开车最在意什么？',
+                options: [
+                    { text: '轮胎温度，别给造坏了', type: '保胎大师' },
+                    { text: '整个过程快不快乐', type: '气氛组' },
+                    { text: '帅不帅，镜头拍到了吗', type: '摄影师' }
+                ]
+            },
+            {
+                text: '在赛车场遇到高手，你会？',
+                options: [
+                    { text: '上去请教走线', type: '小孩哥/小孩姐' },
+                    { text: '疯狂拍照发社交媒体', type: '摄影师' },
+                    { text: '默默在旁边看', type: '路肩' }
+                ]
+            },
+            {
+                text: '过弯时你通常？',
+                options: [
+                    { text: '贴路肩，极限压榨赛道', type: '路肩' },
+                    { text: '一踩油门就容易转圈圈', type: '漂移' },
+                    { text: '找最快的超车点', type: '鱼雷' }
+                ]
+            },
+            {
+                text: '别人对你的评价最可能是？',
+                options: [
+                    { text: '太卷了，天天泡赛道', type: '汽车人' },
+                    { text: '太佛了，来了就是为了吃', type: '气氛组' },
+                    { text: '太猛了，见缝就钻', type: '鱼雷' }
+                ]
+            },
+            {
+                text: '如果卡丁车有段位，你觉得自己是？',
+                options: [
+                    { text: '天赋异禀的扫地僧', type: '小孩哥/小孩姐' },
+                    { text: '还没上车就在算数据的理论王者', type: '数据狂魔' },
+                    { text: '直线很快但经常冲出去的...', type: '鱼雷' }
+                ]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let scores = {};
+
+        function startTest() {
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('question-screen').classList.add('active');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('question-number').textContent = `第 ${currentQuestion + 1}/${questions.length} 题`;
+            document.getElementById('question-text').textContent = q.text;
+            document.getElementById('progress-fill').style.width = `${(currentQuestion / questions.length) * 100}%`;
+
+            const container = document.getElementById('options');
+            container.innerHTML = '';
+
+            q.options.forEach((opt) => {
+                const el = document.createElement('div');
+                el.className = 'option';
+                el.textContent = opt.text;
+                el.onclick = () => selectOption(opt.type);
+                container.appendChild(el);
+            });
+        }
+
+        function selectOption(type) {
+            scores[type] = (scores[type] || 0) + 1;
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                showQuestion();
+            } else {
+                showLoading();
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('question-screen').classList.remove('active');
+            document.getElementById('loading-screen').classList.add('active');
+            setTimeout(showResult, 1500);
+        }
+
+        function showResult() {
+            document.getElementById('loading-screen').classList.remove('active');
+            document.getElementById('result-screen').classList.add('active');
+
+            let maxScore = 0;
+            let resultType = '保胎大师';
+            for (const [type, score] of Object.entries(scores)) {
+                if (score > maxScore) {
+                    maxScore = score;
+                    resultType = type;
+                }
+            }
+
+            const p = personalities[resultType];
+            document.getElementById('result-image').src = p.image;
+            document.getElementById('result-desc').textContent = p.desc;
+
+            const tagsContainer = document.getElementById('result-tags');
+            tagsContainer.innerHTML = '';
+            p.tags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'tag';
+                span.textContent = tag;
+                tagsContainer.appendChild(span);
+            });
+        }
+
+        function restartTest() {
+            currentQuestion = 0;
+            scores = {};
+            document.getElementById('result-screen').classList.remove('active');
+            document.getElementById('start-screen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
