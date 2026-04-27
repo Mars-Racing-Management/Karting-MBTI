@@ -235,7 +235,112 @@
             margin: 0 auto 20px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        /* 分享卡片（截图用） */
+        .share-card {
+            background: linear-gradient(180deg, #fff 0%, #fafafa 100%);
+            border-radius: 20px;
+            padding: 28px 24px 22px;
+            margin: 0 auto 25px;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .share-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff3e3e, #ff8c00);
+        }
+        .share-header {
+            margin-bottom: 18px;
+        }
+        .share-logo {
+            font-size: 11px;
+            font-weight: 700;
+            color: #ff8c00;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .share-title {
+            font-size: 22px;
+            font-weight: 900;
+            color: #222;
+        }
+        .share-image {
+            width: 100%;
+            max-width: 320px;
+            border-radius: 14px;
+            margin: 0 auto 16px;
+            display: block;
+        }
+        .share-type {
+            font-size: 26px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ff3e3e, #ff8c00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+        .share-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .share-tag {
+            background: rgba(255, 36, 66, 0.08);
+            color: #ff2442;
+            padding: 5px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .share-footer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding-top: 18px;
+            border-top: 1px dashed #eee;
+        }
+        .share-qrcode canvas, .share-qrcode img {
+            display: block;
+            border-radius: 8px;
+        }
+        .share-url {
+            text-align: left;
+            font-size: 12px;
+            color: #888;
+            line-height: 1.6;
+        }
+        .share-url strong {
+            color: #333;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .save-btn {
+            background: linear-gradient(135deg, #ff3e3e, #ff8c00);
+            border: none;
+            color: white;
+            padding: 14px 40px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+        .save-btn:hover { transform: scale(1.05); }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -280,6 +385,26 @@
             <img class="result-image" id="result-image" src="" alt="">
             <div class="result-tags" id="result-tags"></div>
             <div class="result-desc" id="result-desc"></div>
+
+            <!-- 截图分享卡片（平时隐藏，截图时渲染） -->
+            <div id="share-card" class="share-card" style="position:fixed;left:-9999px;top:0;">
+                <div class="share-header">
+                    <div class="share-logo">Mars Racing</div>
+                    <div class="share-title">卡丁车 MBTI</div>
+                </div>
+                <img class="share-image" id="share-image" src="" alt="">
+                <div class="share-type" id="share-type"></div>
+                <div class="share-tags" id="share-tags"></div>
+                <div class="share-footer">
+                    <div class="share-qrcode" id="share-qrcode"></div>
+                    <div class="share-url">
+                        <strong>扫码测试你的赛道人格</strong>
+                        https://mars-racing-management.github.io/Karting-MBTI/
+                    </div>
+                </div>
+            </div>
+
+            <button class="save-btn" onclick="saveScreenshot()">保存截图</button>
             <button class="restart-btn" onclick="restartTest()">再测一次</button>
             <div class="footer">Mars Racing</div>
         </div>
@@ -531,6 +656,58 @@
                 span.className = 'tag';
                 span.textContent = tag;
                 tagsContainer.appendChild(span);
+            });
+
+            // 填充分享卡片
+            document.getElementById('share-image').src = p.image;
+            document.getElementById('share-type').textContent = resultType;
+            const shareTags = document.getElementById('share-tags');
+            shareTags.innerHTML = '';
+            p.tags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'share-tag';
+                span.textContent = tag;
+                shareTags.appendChild(span);
+            });
+
+            // 生成二维码
+            const qrContainer = document.getElementById('share-qrcode');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: 'https://mars-racing-management.github.io/Karting-MBTI/',
+                width: 80,
+                height: 80,
+                colorDark: '#222',
+                colorLight: '#fff',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+
+        function saveScreenshot() {
+            const card = document.getElementById('share-card');
+            // 临时移到可视区域并显示
+            const originalStyle = card.style.cssText;
+            card.style.position = 'static';
+            card.style.left = 'auto';
+            card.style.margin = '0 auto 25px';
+
+            html2canvas(card, {
+                scale: 2,
+                backgroundColor: '#fff',
+                useCORS: true,
+                allowTaint: true
+            }).then(canvas => {
+                // 恢复隐藏状态
+                card.style.cssText = originalStyle;
+
+                const link = document.createElement('a');
+                link.download = '卡丁车MBTI测试结果.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(err => {
+                card.style.cssText = originalStyle;
+                alert('截图生成失败，请重试');
+                console.error(err);
             });
         }
 
