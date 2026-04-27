@@ -343,14 +343,15 @@
         <!-- 结果页 -->
         <div id="result-screen" class="screen result-screen">
             <img class="result-image" id="result-image" src="" alt="">
-            <div class="result-tags" id="result-tags"></div>
-            <div class="result-desc" id="result-desc"></div>
 
-            <!-- 截图结果展示区 -->
+            <!-- 截图结果展示区（点击保存后覆盖人格图位置） -->
             <div id="screenshot-area" style="display:none;">
                 <img id="screenshot-img" class="screenshot-result" alt="测试结果截图">
                 <p class="screenshot-hint">如未自动保存截图，可长按图片保存</p>
             </div>
+
+            <div class="result-tags" id="result-tags"></div>
+            <div class="result-desc" id="result-desc"></div>
 
             <!-- 隐藏的截图源卡片 -->
             <div id="share-card" class="share-card" style="position:fixed;left:-9999px;top:0;">
@@ -645,7 +646,12 @@
             }).then(canvas => {
                 const dataUrl = canvas.toDataURL('image/png');
 
-                // 显示截图结果在页面上
+                // 隐藏原结果内容
+                document.getElementById('result-image').style.display = 'none';
+                document.getElementById('result-tags').style.display = 'none';
+                document.getElementById('result-desc').style.display = 'none';
+
+                // 显示截图结果在人格图原位置
                 const area = document.getElementById('screenshot-area');
                 const img = document.getElementById('screenshot-img');
                 img.src = dataUrl;
