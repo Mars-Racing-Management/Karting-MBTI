@@ -373,30 +373,74 @@
 
     <script>
         let hasFollowed = false;
+        let countdownTimer = null;
+        let countdownSeconds = 15;
+
+        // 倒计时逻辑
+        function startCountdown() {
+            const btn = document.getElementById('start-btn');
+            const hint = document.getElementById('start-hint');
+            btn.disabled = true;
+            btn.textContent = '开始测试 (' + countdownSeconds + 's)';
+            hint.textContent = '关注账号后可立即开始游戏';
+
+            countdownTimer = setInterval(() => {
+                countdownSeconds--;
+                if (countdownSeconds > 0) {
+                    btn.textContent = '开始测试 (' + countdownSeconds + 's)';
+                } else {
+                    clearInterval(countdownTimer);
+                    enableStart(true);
+                }
+            }, 1000);
+        }
 
         document.getElementById('btn-douyin').addEventListener('click', function() {
             this.classList.add('done');
             this.textContent = '已关注抖音';
-            enableStart();
+            enableStart(false);
         });
 
         document.getElementById('btn-xhs').addEventListener('click', function() {
             this.classList.add('done');
             this.textContent = '已关注小红书';
-            enableStart();
+            enableStart(false);
         });
 
-        function enableStart() {
-            if (!hasFollowed) {
-                hasFollowed = true;
-                document.getElementById('start-hint').textContent = '页面加载中...';
+        function enableStart(fromCountdown) {
+            if (hasFollowed) return;
+            hasFollowed = true;
+
+            // 如果有倒计时，清除它
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
+
+            const btn = document.getElementById('start-btn');
+            const hint = document.getElementById('start-hint');
+
+            if (fromCountdown) {
+                // 倒计时结束自动启用
+                btn.disabled = false;
+                btn.textContent = '开始测试 →';
+                hint.textContent = '可以开始了！';
+                hint.style.color = '#4ade80';
+            } else {
+                // 点击关注按钮立即启用
+                btn.textContent = '页面加载中...';
+                hint.textContent = '正在准备...';
                 setTimeout(() => {
-                    document.getElementById('start-btn').disabled = false;
-                    document.getElementById('start-hint').textContent = '可以开始了！';
-                    document.getElementById('start-hint').style.color = '#4ade80';
-                }, 2500);
+                    btn.disabled = false;
+                    btn.textContent = '开始测试 →';
+                    hint.textContent = '可以开始了！';
+                    hint.style.color = '#4ade80';
+                }, 800);
             }
         }
+
+        // 页面加载时启动倒计时
+        startCountdown();
 
         const personalities = {
             '保胎大师': {
